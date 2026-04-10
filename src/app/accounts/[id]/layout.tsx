@@ -13,8 +13,8 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
   return (
     <div>
       {/* Account Header */}
-      <div className="border-b border-[#E8E8E8] bg-[#F7F7F7]/90 backdrop-blur sticky top-0 z-30">
-        <div className="px-6 pt-5 pb-0">
+      <div className="border-b border-[#E8E8E8] bg-[#F7F7F7]/90 backdrop-blur sticky top-14 md:top-0 z-20">
+        <div className="px-4 md:px-6 pt-4 md:pt-5 pb-0">
           <div className="flex items-center gap-3 mb-4">
             {account && (
               <>
@@ -35,7 +35,7 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
         </div>
       </div>
 
-      <div className="p-8">{children}</div>
+      <div className="p-4 md:p-8">{children}</div>
     </div>
   );
 }

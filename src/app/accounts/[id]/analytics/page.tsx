@@ -101,7 +101,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Engagement Stats */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white border border-[#E8E8E8] rounded-xl p-5">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[#999999] text-xs">粉丝增长</span>
@@ -160,9 +160,9 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Heatmap */}
-      <div className="bg-white border border-[#E8E8E8] rounded-xl p-6">
+      <div className="bg-white border border-[#E8E8E8] rounded-xl p-4 md:p-6">
         <h3 className="text-[#111111] font-semibold text-sm mb-4">最佳发帖时间热力图</h3>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
           <table className="text-xs">
             <thead>
               <tr>

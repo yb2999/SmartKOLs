@@ -57,9 +57,9 @@ export default function MonitoringPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-screen">
       {/* Header */}
-      <div className="px-8 py-5 border-b border-[#E8E8E8] flex items-center gap-4">
+      <div className="px-4 md:px-8 py-4 md:py-5 border-b border-[#E8E8E8] flex items-center gap-4 flex-wrap">
         <div>
           <h1 className="text-xl font-bold text-[#111111] flex items-center gap-2">
             <Bell className="w-5 h-5 text-[#111111]" />
@@ -86,9 +86,9 @@ export default function MonitoringPage() {
       </div>
 
       {activeTab === "messages" ? (
-        <div className="flex flex-1 min-h-0">
+        <div className="flex flex-col md:flex-row flex-1 min-h-0">
           {/* Left: Message List */}
-          <div className="w-96 border-r border-[#E8E8E8] flex flex-col flex-shrink-0">
+          <div className="w-full md:w-96 border-b md:border-b-0 md:border-r border-[#E8E8E8] flex flex-col flex-shrink-0 max-h-[50vh] md:max-h-none">
             {/* Filter */}
             <div className="px-4 py-3 border-b border-[#E8E8E8] flex gap-1.5 flex-wrap">
               {[{ key: "all", label: "全部" }, { key: "collab", label: "🤝 合作" }, { key: "commerce", label: "💰 商务" }, { key: "spam", label: "🚨 垃圾" }, { key: "normal", label: "💬 普通" }].map(({ key, label }) => (
@@ -141,7 +141,7 @@ export default function MonitoringPage() {
           </div>
 
           {/* Right: Message Detail */}
-          <div className="flex-1 p-8">
+          <div className="flex-1 p-4 md:p-8 overflow-auto">
             {selectedMsg ? (
               <div className="max-w-2xl">
                 <div className="flex items-center gap-3 mb-6">
@@ -178,7 +178,7 @@ export default function MonitoringPage() {
         </div>
       ) : (
         /* Alert Config Tab */
-        <div className="flex-1 overflow-auto p-8">
+        <div className="flex-1 overflow-auto p-4 md:p-8">
           <div className="max-w-xl space-y-6">
             {/* Lark */}
             <div className="bg-white border border-[#E8E8E8] rounded-xl p-6 space-y-4">

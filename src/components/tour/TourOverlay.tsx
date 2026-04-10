@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useTour } from "./TourProvider";
 import { TOUR_STEPS } from "@/lib/tour-steps";
 import { X, ArrowLeft, ArrowRight } from "lucide-react";
@@ -8,9 +8,18 @@ import { X, ArrowLeft, ArrowRight } from "lucide-react";
 const PAD = 8;
 const TOOLTIP_WIDTH = 400;
 const TOOLTIP_OFFSET = 16;
+const MOBILE_BREAKPOINT = 768;
 
 export default function TourOverlay() {
   const { active, currentStep, targetRect, totalSteps, next, prev, skip, end } = useTour();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const step = TOUR_STEPS[currentStep];
   const isFull = step?.highlight === "full";
@@ -33,6 +42,12 @@ export default function TourOverlay() {
 
   const tooltipPosition = useMemo(() => {
     if (typeof window === "undefined") return { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
+
+    // Mobile: always bottom sheet
+    if (isMobile) {
+      return { bottom: "16px", left: "16px", right: "16px", transform: "none" };
+    }
+
     const w = window.innerWidth;
     const h = window.innerHeight;
 
@@ -48,21 +63,17 @@ export default function TourOverlay() {
 
     // Prefer: below > above > right > left
     if (spaceBelow >= 220) {
-      // Below
       const left = Math.max(16, Math.min(w - TOOLTIP_WIDTH - 16, targetCenterX - TOOLTIP_WIDTH / 2));
       return { top: `${targetRect.y + targetRect.height + TOOLTIP_OFFSET}px`, left: `${left}px`, transform: "none" };
     } else if (spaceAbove >= 220) {
-      // Above
       const left = Math.max(16, Math.min(w - TOOLTIP_WIDTH - 16, targetCenterX - TOOLTIP_WIDTH / 2));
       return { bottom: `${h - targetRect.y + TOOLTIP_OFFSET}px`, left: `${left}px`, transform: "none" };
     } else if (spaceRight >= TOOLTIP_WIDTH + 32) {
-      // Right
       return { left: `${targetRect.x + targetRect.width + TOOLTIP_OFFSET}px`, top: `${Math.max(16, targetCenterY - 120)}px`, transform: "none" };
     } else {
-      // Left
       return { right: `${w - targetRect.x + TOOLTIP_OFFSET}px`, top: `${Math.max(16, targetCenterY - 120)}px`, transform: "none" };
     }
-  }, [targetRect, isFull]);
+  }, [targetRect, isFull, isMobile]);
 
   if (!active || !step) return null;
 
@@ -87,7 +98,7 @@ export default function TourOverlay() {
       {/* Tooltip Card */}
       <div
         className="fixed z-[1002] bg-white rounded-xl border border-[#E8E8E8] shadow-2xl p-5 pointer-events-auto"
-        style={{ ...tooltipPosition, width: `${TOOLTIP_WIDTH}px`, maxWidth: "calc(100vw - 32px)" }}
+        style={isMobile ? tooltipPosition : { ...tooltipPosition, width: `${TOOLTIP_WIDTH}px`, maxWidth: "calc(100vw - 32px)" }}
       >
         {/* Progress */}
         <div className="flex items-center justify-between mb-3">

@@ -72,7 +72,7 @@ export default function EngagementPage() {
       <p className="text-[#999999] text-sm mb-6">让账号自动去关注、转发、评论、回复 —— 看起来像真人，而不是只会发推的机器</p>
 
       {/* Today's Summary */}
-      <div className="grid grid-cols-4 gap-3 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
         <div className="bg-white border border-[#E8E8E8] rounded-xl p-4">
           <div className="flex items-center gap-2 mb-1"><UserPlus className="w-4 h-4 text-[#999999]" /><span className="text-xs text-[#999999]">今日关注</span></div>
           <p className="text-[#111111] text-xl font-bold">{todayCount.follow}</p>

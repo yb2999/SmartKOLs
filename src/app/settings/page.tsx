@@ -43,7 +43,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="p-8 max-w-3xl">
+    <div className="p-4 md:p-8 max-w-3xl">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-[#111111]">设置</h1>
         <p className="text-[#999999] text-sm mt-1">系统配置、团队成员与账户管理</p>

@@ -77,9 +77,9 @@ export default function AccountsPage() {
   const ungroupedCount = accounts.filter((a) => !a.groupId).length;
 
   return (
-    <div className="flex h-screen">
-      {/* Group Sidebar */}
-      <aside data-tour="group-sidebar" className="w-52 border-r border-[#E8E8E8] flex-shrink-0 py-6 px-3 space-y-1">
+    <div className="flex h-[calc(100vh-3.5rem)] md:h-screen">
+      {/* Group Sidebar - Desktop only */}
+      <aside data-tour="group-sidebar" className="hidden md:block w-52 border-r border-[#E8E8E8] flex-shrink-0 py-6 px-3 space-y-1">
         <p className="text-xs text-[#999999] uppercase tracking-wider px-3 mb-3">分组</p>
         <button
           onClick={() => setSelectedGroup(null)}
@@ -130,17 +130,29 @@ export default function AccountsPage() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <div className="px-6 py-5 border-b border-[#E8E8E8] flex items-center gap-3">
-          <div className="relative flex-1 max-w-xs">
+        <div className="px-4 md:px-6 py-4 md:py-5 border-b border-[#E8E8E8] flex flex-wrap items-center gap-3">
+          {/* Mobile Group Selector */}
+          <select
+            value={selectedGroup || "all"}
+            onChange={(e) => setSelectedGroup(e.target.value === "all" ? null : e.target.value)}
+            className="md:hidden text-sm bg-white border border-[#E8E8E8] rounded-lg px-2 py-2 text-[#111111] max-w-[140px]"
+          >
+            <option value="all">全部 ({accounts.length})</option>
+            {groups.map((g) => (
+              <option key={g.id} value={g.id}>{g.name} ({groupCounts[g.id] || 0})</option>
+            ))}
+            {ungroupedCount > 0 && <option value="ungrouped">未分组 ({ungroupedCount})</option>}
+          </select>
+          <div className="relative flex-1 min-w-[140px] max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#999999]" />
             <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="搜索账号..." className="pl-9" />
           </div>
           <div className="ml-auto flex gap-2">
             <Button variant="outline" size="sm" onClick={() => setShowCsv(true)}>
-              <Upload className="w-4 h-4 mr-1.5" />批量导入
+              <Upload className="w-4 h-4 md:mr-1.5" /><span className="hidden md:inline">批量导入</span>
             </Button>
             <Button size="sm" onClick={() => setShowAdd(true)}>
-              <Plus className="w-4 h-4 mr-1.5" />添加账号
+              <Plus className="w-4 h-4 md:mr-1.5" /><span className="hidden md:inline">添加账号</span>
             </Button>
           </div>
         </div>
@@ -167,7 +179,7 @@ export default function AccountsPage() {
 
         {/* Table */}
         <div className="flex-1 overflow-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm min-w-[760px]">
             <thead>
               <tr className="border-b border-[#E8E8E8] text-[#999999] text-xs">
                 <th className="pl-6 py-3 text-left w-10">

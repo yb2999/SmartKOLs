@@ -44,7 +44,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="p-8" data-tour="dashboard-welcome">
+    <div className="p-4 md:p-8" data-tour="dashboard-welcome">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-[#111111]">概览</h1>
         <p className="text-[#999999] text-sm mt-1">SmartKOLs 运营数据一览</p>
@@ -53,7 +53,7 @@ export default function DashboardPage() {
       <TourWelcomeCard />
 
       {/* Stats */}
-      <div data-tour="dashboard-stats" className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+      <div data-tour="dashboard-stats" className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         {stats.map(({ label, value, sub, icon: Icon, color }) => (
           <div key={label} className="bg-white border border-[#E8E8E8] rounded-xl p-5">
             <div className="flex items-center justify-between mb-3">

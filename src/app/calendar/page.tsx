@@ -88,9 +88,9 @@ export default function CalendarPage() {
   const totalThisWeek = week.reduce((sum, d) => sum + getSchedule(d).length, 0);
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex items-start justify-between mb-6 gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-[#111111] flex items-center gap-2">
             <CalendarDays className="w-6 h-6" />
@@ -112,7 +112,7 @@ export default function CalendarPage() {
       </div>
 
       {/* Week Grid */}
-      <div data-tour="week-grid" className="grid grid-cols-7 gap-3 mb-6">
+      <div data-tour="week-grid" className="grid grid-cols-1 md:grid-cols-7 gap-3 mb-6">
         {week.map((d, i) => {
           const schedule = getSchedule(d);
           const isToday = d.toDateString() === todayStr;
@@ -122,7 +122,7 @@ export default function CalendarPage() {
               key={i}
               onClick={() => setSelectedDay(d)}
               className={cn(
-                "bg-white border rounded-xl p-3 text-left transition-colors min-h-[180px] flex flex-col",
+                "bg-white border rounded-xl p-3 text-left transition-colors md:min-h-[180px] flex flex-col",
                 isSelected ? "border-[#111111]" : "border-[#E8E8E8] hover:border-[#CCCCCC]"
               )}
             >

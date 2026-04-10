@@ -48,7 +48,7 @@ export default function DraftsPage() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-[#111111] flex items-center gap-2">
           <FileText className="w-6 h-6" />
