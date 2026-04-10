@@ -1,0 +1,71 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { LayoutDashboard, Users, Bell, Settings } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const navItems = [
+  { label: "概览", href: "/dashboard", icon: LayoutDashboard },
+  { label: "账号管理", href: "/accounts", icon: Users },
+  { label: "监控中心", href: "/monitoring", icon: Bell },
+];
+
+export default function Sidebar() {
+  const pathname = usePathname();
+
+  return (
+    <aside className="fixed left-0 top-0 h-full w-56 bg-white border-r border-[#E8E8E8] flex flex-col z-40">
+      {/* Logo */}
+      <div className="px-5 py-5 border-b border-[#E8E8E8]">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-[#111111] flex items-center justify-center text-white text-xs font-black">
+            SK
+          </div>
+          <span className="text-[#111111] font-semibold text-base tracking-tight">SmartKOLs</span>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 px-3 pt-4 space-y-0.5">
+        {navItems.map(({ label, href, icon: Icon }) => {
+          const isActive = pathname === href || pathname.startsWith(href + "/");
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors",
+                isActive
+                  ? "bg-[#F0F0F0] text-[#111111] font-medium"
+                  : "text-[#999999] hover:text-[#333333] hover:bg-[#F7F7F7]"
+              )}
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+              {href === "/monitoring" && (
+                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#111111]" />
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Settings */}
+      <div className="px-3 pb-5 border-t border-[#E8E8E8] pt-3">
+        <Link
+          href="/settings"
+          className={cn(
+            "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors",
+            pathname === "/settings"
+              ? "bg-[#F0F0F0] text-[#111111] font-medium"
+              : "text-[#999999] hover:text-[#333333] hover:bg-[#F7F7F7]"
+          )}
+        >
+          <Settings className="w-4 h-4" />
+          设置
+        </Link>
+      </div>
+    </aside>
+  );
+}
