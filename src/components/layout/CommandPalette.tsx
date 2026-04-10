@@ -1,0 +1,166 @@
+"use client";
+
+import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { useMockStore } from "@/lib/mock-store";
+import { Search, Users, FileText, MessageSquare, LayoutDashboard, Bell, Settings, CalendarDays } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface Props {
+  open: boolean;
+  onClose: () => void;
+}
+
+interface Result {
+  id: string;
+  label: string;
+  sub?: string;
+  icon: React.ReactNode;
+  href: string;
+  group: string;
+}
+
+const PAGES: Result[] = [
+  { id: "p1", label: "概览", sub: "Dashboard", icon: <LayoutDashboard className="w-4 h-4" />, href: "/dashboard", group: "页面" },
+  { id: "p2", label: "账号管理", sub: "Accounts", icon: <Users className="w-4 h-4" />, href: "/accounts", group: "页面" },
+  { id: "p3", label: "内容日历", sub: "Calendar", icon: <CalendarDays className="w-4 h-4" />, href: "/calendar", group: "页面" },
+  { id: "p4", label: "内容审核", sub: "Drafts", icon: <FileText className="w-4 h-4" />, href: "/drafts", group: "页面" },
+  { id: "p5", label: "监控中心", sub: "Monitoring", icon: <Bell className="w-4 h-4" />, href: "/monitoring", group: "页面" },
+  { id: "p6", label: "设置", sub: "Settings", icon: <Settings className="w-4 h-4" />, href: "/settings", group: "页面" },
+];
+
+export default function CommandPalette({ open, onClose }: Props) {
+  const router = useRouter();
+  const { accounts, drafts, monitoringMessages } = useMockStore();
+  const [query, setQuery] = useState("");
+  const [selectedIdx, setSelectedIdx] = useState(0);
+
+  useEffect(() => {
+    if (open) {
+      setQuery("");
+      setSelectedIdx(0);
+    }
+  }, [open]);
+
+  const results = useMemo<Result[]>(() => {
+    const q = query.toLowerCase().trim();
+    if (!q) return PAGES;
+
+    const pages = PAGES.filter((p) => p.label.toLowerCase().includes(q) || p.sub?.toLowerCase().includes(q));
+
+    const accountResults: Result[] = accounts
+      .filter((a) => a.handle.toLowerCase().includes(q) || a.displayName.toLowerCase().includes(q))
+      .slice(0, 8)
+      .map((a) => ({
+        id: a.id,
+        label: a.displayName,
+        sub: a.handle,
+        icon: <Users className="w-4 h-4" />,
+        href: `/accounts/${a.id}/persona`,
+        group: "账号",
+      }));
+
+    const draftResults: Result[] = drafts
+      .filter((d) => d.content.toLowerCase().includes(q) || d.topic.toLowerCase().includes(q))
+      .slice(0, 5)
+      .map((d) => ({
+        id: d.id,
+        label: d.content.slice(0, 60) + (d.content.length > 60 ? "..." : ""),
+        sub: `草稿 · ${d.topic}`,
+        icon: <FileText className="w-4 h-4" />,
+        href: "/drafts",
+        group: "草稿",
+      }));
+
+    const messageResults: Result[] = monitoringMessages
+      .filter((m) => m.sender.toLowerCase().includes(q) || m.preview.toLowerCase().includes(q))
+      .slice(0, 5)
+      .map((m) => ({
+        id: m.id,
+        label: m.sender,
+        sub: m.preview.slice(0, 50),
+        icon: <MessageSquare className="w-4 h-4" />,
+        href: "/monitoring",
+        group: "消息",
+      }));
+
+    return [...pages, ...accountResults, ...draftResults, ...messageResults];
+  }, [query, accounts, drafts, monitoringMessages]);
+
+  const handleSelect = (r: Result) => {
+    router.push(r.href);
+    onClose();
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { onClose(); return; }
+      if (e.key === "ArrowDown") { e.preventDefault(); setSelectedIdx((i) => Math.min(i + 1, results.length - 1)); }
+      if (e.key === "ArrowUp") { e.preventDefault(); setSelectedIdx((i) => Math.max(i - 1, 0)); }
+      if (e.key === "Enter") { e.preventDefault(); if (results[selectedIdx]) handleSelect(results[selectedIdx]); }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [open, results, selectedIdx]);
+
+  if (!open) return null;
+
+  // Group results
+  const grouped: Record<string, Result[]> = {};
+  results.forEach((r) => {
+    if (!grouped[r.group]) grouped[r.group] = [];
+    grouped[r.group].push(r);
+  });
+
+  let flatIdx = 0;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] bg-black/40 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-white rounded-xl shadow-2xl border border-[#E8E8E8] w-full max-w-lg overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-[#E8E8E8]">
+          <Search className="w-4 h-4 text-[#999999]" />
+          <input
+            autoFocus
+            value={query}
+            onChange={(e) => { setQuery(e.target.value); setSelectedIdx(0); }}
+            placeholder="搜索账号、草稿、消息或跳转到页面..."
+            className="flex-1 bg-transparent text-sm text-[#111111] placeholder:text-[#999999] focus:outline-none"
+          />
+          <kbd className="text-[10px] text-[#999999] bg-[#F0F0F0] px-1.5 py-0.5 rounded">ESC</kbd>
+        </div>
+        <div className="max-h-[420px] overflow-y-auto">
+          {results.length === 0 && (
+            <p className="text-center text-[#999999] text-sm py-10">没有找到匹配项</p>
+          )}
+          {Object.entries(grouped).map(([group, items]) => (
+            <div key={group}>
+              <p className="text-[10px] text-[#999999] uppercase tracking-wider px-4 pt-3 pb-1 font-medium">{group}</p>
+              {items.map((r) => {
+                const currentIdx = flatIdx++;
+                const isSelected = currentIdx === selectedIdx;
+                return (
+                  <button
+                    key={r.id}
+                    onClick={() => handleSelect(r)}
+                    onMouseEnter={() => setSelectedIdx(currentIdx)}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors",
+                      isSelected ? "bg-[#F0F0F0] text-[#111111]" : "text-[#111111] hover:bg-[#F7F7F7]"
+                    )}
+                  >
+                    <span className="text-[#999999]">{r.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="truncate">{r.label}</p>
+                      {r.sub && <p className="text-xs text-[#999999] truncate">{r.sub}</p>}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

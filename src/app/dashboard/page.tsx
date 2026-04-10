@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useMockStore } from "@/lib/mock-store";
 import Link from "next/link";
-import { Users, Bell, Zap, TrendingUp, ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Users, Bell, Zap, TrendingUp, ChevronRight, Flame, FileText, Sparkles } from "lucide-react";
 
 function formatNumber(n: number) {
   if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
@@ -11,19 +13,34 @@ function formatNumber(n: number) {
 }
 
 export default function DashboardPage() {
-  const { accounts, groups, monitoringMessages } = useMockStore();
+  const { accounts, groups, monitoringMessages, drafts, trendingTopics, engagementLogs, addDraftsFromTopic } = useMockStore();
+  const router = useRouter();
+  const [generating, setGenerating] = useState<string | null>(null);
 
   const activeAccounts = accounts.filter((a) => a.active).length;
   const totalFollowers = accounts.reduce((s, a) => s + a.followersCount, 0);
   const unreadMessages = monitoringMessages.filter((m) => !m.read).length;
   const collabMessages = monitoringMessages.filter((m) => m.category === "collab").length;
+  const pendingDrafts = drafts.filter((d) => d.status === "pending").length;
+  const todayEngagements = engagementLogs.filter((l) => new Date(l.at).toDateString() === new Date().toDateString()).length;
 
   const stats = [
     { label: "总账号数", value: accounts.length, sub: `${activeAccounts} 个运行中`, icon: Users, color: "text-[#111111]" },
     { label: "总粉丝数", value: formatNumber(totalFollowers), sub: "跨所有账号", icon: TrendingUp, color: "text-[#00BA7C]" },
+    { label: "待审核草稿", value: pendingDrafts, sub: "条推文待批准", icon: FileText, color: "text-orange-500" },
+    { label: "今日互动", value: todayEngagements, sub: "次自动互动", icon: Zap, color: "text-sky-400" },
     { label: "未读消息", value: unreadMessages, sub: `${collabMessages} 条合作邀约`, icon: Bell, color: "text-[#999999]" },
-    { label: "账号分组", value: groups.length, sub: "个活跃分组", icon: Zap, color: "text-sky-400" },
+    { label: "账号分组", value: groups.length, sub: "个活跃分组", icon: Sparkles, color: "text-purple-500" },
   ];
+
+  const handleGenerateFromTopic = (topic: string) => {
+    setGenerating(topic);
+    setTimeout(() => {
+      addDraftsFromTopic(topic);
+      setGenerating(null);
+      router.push("/drafts");
+    }, 800);
+  };
 
   return (
     <div className="p-8">
@@ -33,7 +50,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
         {stats.map(({ label, value, sub, icon: Icon, color }) => (
           <div key={label} className="bg-white border border-[#E8E8E8] rounded-xl p-5">
             <div className="flex items-center justify-between mb-3">
@@ -44,6 +61,36 @@ export default function DashboardPage() {
             <p className="text-[#999999] text-xs mt-1">{sub}</p>
           </div>
         ))}
+      </div>
+
+      {/* Trending Topics */}
+      <div className="bg-white border border-[#E8E8E8] rounded-xl p-5 mb-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Flame className="w-4 h-4 text-orange-500" />
+          <h2 className="text-[#111111] font-semibold text-sm">近 24 小时热门话题</h2>
+          <span className="text-xs text-[#999999]">· 点击一键批量生成相关草稿</span>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+          {trendingTopics.slice(0, 10).map((t) => (
+            <button
+              key={t.topic}
+              onClick={() => handleGenerateFromTopic(t.topic)}
+              disabled={generating !== null}
+              className="text-left bg-[#F7F7F7] border border-[#E8E8E8] hover:border-[#111111] rounded-lg p-3 transition-colors disabled:opacity-50"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] text-[#999999] uppercase">{t.category}</span>
+                <div className="flex items-center gap-1 text-xs text-orange-500">
+                  <Flame className="w-3 h-3" />
+                  {t.heat}
+                </div>
+              </div>
+              <p className="text-[#111111] text-xs font-medium line-clamp-2">
+                {generating === t.topic ? "生成中..." : t.topic}
+              </p>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Recent Accounts */}

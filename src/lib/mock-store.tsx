@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import accountsData from "@/data/accounts.json";
 import personasData from "@/data/personas.json";
 import autopostData from "@/data/autopost.json";
@@ -9,6 +9,10 @@ import tweetPreviewsData from "@/data/tweet-previews.json";
 import groupsData from "@/data/groups.json";
 import templatesData from "@/data/persona-templates.json";
 import monitoringData from "@/data/monitoring.json";
+import draftsData from "@/data/drafts.json";
+import engagementConfigsData from "@/data/engagement-configs.json";
+import engagementLogsData from "@/data/engagement-logs.json";
+import notificationsData from "@/data/notifications.json";
 
 export interface Account {
   id: string;
@@ -82,6 +86,132 @@ export interface MonitoringMessage {
   read: boolean;
 }
 
+export interface Draft {
+  id: string;
+  accountId: string;
+  content: string;
+  status: "pending" | "approved" | "rejected";
+  scheduledTime: string;
+  generatedAt: string;
+  topic: string;
+}
+
+export interface EngagementRule {
+  type: string;
+  value: string;
+}
+
+export interface AutoFollowConfig {
+  enabled: boolean;
+  maxPerDay: number;
+  rules: EngagementRule[];
+}
+
+export interface AutoRetweetConfig {
+  enabled: boolean;
+  maxPerDay: number;
+  minLikes: number;
+  whitelist: string[];
+  keywords: string[];
+  delayMin: number;
+  delayMax: number;
+  quoteTweetEnabled: boolean;
+}
+
+export interface AutoCommentConfig {
+  enabled: boolean;
+  maxPerDay: number;
+  targets: string[];
+  style: string;
+  mode: string;
+}
+
+export interface AutoReplyConfig {
+  enabled: boolean;
+  maxPerDay: number;
+  triggerTypes: string[];
+  onlyFollowers: boolean;
+  keywords: string[];
+  style: string;
+}
+
+export interface EngagementConfig {
+  autoFollow: AutoFollowConfig;
+  autoRetweet: AutoRetweetConfig;
+  autoComment: AutoCommentConfig;
+  autoReply: AutoReplyConfig;
+}
+
+export interface EngagementLog {
+  id: string;
+  accountId: string;
+  type: "follow" | "retweet" | "comment" | "reply";
+  targetHandle: string;
+  targetName?: string;
+  tweetExcerpt?: string;
+  commentText?: string;
+  replyText?: string;
+  at: string;
+}
+
+export interface Notification {
+  id: string;
+  type: "post" | "message" | "health" | "action" | "engagement";
+  text: string;
+  at: string;
+  read: boolean;
+  link?: string;
+}
+
+export interface TrendingTopic {
+  topic: string;
+  heat: number;
+  category: string;
+}
+
+export interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  avatarSeed: string;
+  lastActive: string;
+}
+
+export interface HealthScore {
+  score: number;
+  breakdown: Array<{ label: string; value: number; max: number }>;
+  risk: "low" | "medium" | "high";
+}
+
+export const DEFAULT_ENGAGEMENT_CONFIG: EngagementConfig = {
+  autoFollow: { enabled: false, maxPerDay: 15, rules: [] },
+  autoRetweet: { enabled: false, maxPerDay: 3, minLikes: 1000, whitelist: [], keywords: [], delayMin: 30, delayMax: 120, quoteTweetEnabled: false },
+  autoComment: { enabled: false, maxPerDay: 5, targets: [], style: "supportive", mode: "latest" },
+  autoReply: { enabled: false, maxPerDay: 30, triggerTypes: ["mention", "reply"], onlyFollowers: false, keywords: [], style: "grateful" },
+};
+
+const TRENDING_TOPICS: TrendingTopic[] = [
+  { topic: "Bitcoin ETF 资金流入", heat: 98, category: "加密" },
+  { topic: "Claude Sonnet 4.6 发布", heat: 94, category: "AI" },
+  { topic: "Layer 2 扩容进展", heat: 87, category: "加密" },
+  { topic: "美联储 5 月降息预期", heat: 85, category: "财经" },
+  { topic: "Llama 4 开源动态", heat: 82, category: "AI" },
+  { topic: "Solana TPS 新纪录", heat: 78, category: "加密" },
+  { topic: "AI 代理 Agent 范式", heat: 75, category: "AI" },
+  { topic: "纳指突破历史高点", heat: 72, category: "财经" },
+  { topic: "RAG vs 微调讨论", heat: 68, category: "AI" },
+  { topic: "DeFi 再质押赛道", heat: 65, category: "加密" },
+];
+
+const TEAM_MEMBERS: TeamMember[] = [
+  { id: "mem_001", name: "Raye Chen", email: "raye@smartkols.io", role: "Owner", avatarSeed: "naval", lastActive: "2 分钟前" },
+  { id: "mem_002", name: "Alex Wang", email: "alex@smartkols.io", role: "Admin", avatarSeed: "sama", lastActive: "1 小时前" },
+  { id: "mem_003", name: "Jenny Liu", email: "jenny@smartkols.io", role: "Editor", avatarSeed: "karpathy", lastActive: "3 小时前" },
+  { id: "mem_004", name: "Mike Zhang", email: "mike@smartkols.io", role: "Editor", avatarSeed: "pmarca", lastActive: "昨天" },
+  { id: "mem_005", name: "Sarah Kim", email: "sarah@smartkols.io", role: "Viewer", avatarSeed: "benedictevans", lastActive: "2 天前" },
+];
+
 interface MockStore {
   accounts: Account[];
   groups: Group[];
@@ -91,6 +221,13 @@ interface MockStore {
   sources: Record<string, Source[]>;
   tweetPreviews: Record<string, string[]>;
   monitoringMessages: MonitoringMessage[];
+  drafts: Draft[];
+  engagementConfigs: Record<string, EngagementConfig>;
+  engagementLogs: EngagementLog[];
+  notifications: Notification[];
+  trendingTopics: TrendingTopic[];
+  teamMembers: TeamMember[];
+  hydrated: boolean;
   addAccount: (account: Account) => void;
   addAccounts: (accounts: Account[]) => void;
   deleteAccount: (id: string) => void;
@@ -107,9 +244,44 @@ interface MockStore {
   moveAccountsToGroup: (ids: string[], groupId: string) => void;
   markMessageRead: (id: string) => void;
   randomizePersonas: (ids: string[]) => void;
+  approveDraft: (id: string) => void;
+  rejectDraft: (id: string) => void;
+  regenerateDraft: (id: string) => void;
+  editDraft: (id: string, content: string) => void;
+  addDraftsFromTopic: (topic: string) => void;
+  getEngagementConfig: (accountId: string) => EngagementConfig;
+  updateEngagementConfig: (accountId: string, config: EngagementConfig) => void;
+  markNotificationRead: (id: string) => void;
+  markAllNotificationsRead: () => void;
+  addNotification: (n: Omit<Notification, "id" | "at" | "read">) => void;
+  getHealthScore: (accountId: string) => HealthScore;
+  resetDemo: () => void;
 }
 
 const MockStoreContext = createContext<MockStore | null>(null);
+
+const STORAGE_KEY = "smartkols_state_v1";
+
+function loadFromStorage<T>(key: string, fallback: T): T {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const saved = localStorage.getItem(`${STORAGE_KEY}_${key}`);
+    return saved ? (JSON.parse(saved) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function saveToStorage<T>(key: string, value: T) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(`${STORAGE_KEY}_${key}`, JSON.stringify(value));
+  } catch {}
+}
+
+function hashString(s: string): number {
+  return s.split("").reduce((acc, c, i) => acc + c.charCodeAt(0) * (i + 1), 0);
+}
 
 export function MockStoreProvider({ children }: { children: ReactNode }) {
   const [accounts, setAccounts] = useState<Account[]>(accountsData as Account[]);
@@ -120,6 +292,38 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
   const [sources, setSources] = useState<Record<string, Source[]>>(sourcesData as Record<string, Source[]>);
   const tweetPreviews = tweetPreviewsData as Record<string, string[]>;
   const [monitoringMessages, setMonitoringMessages] = useState<MonitoringMessage[]>(monitoringData as MonitoringMessage[]);
+  const [drafts, setDrafts] = useState<Draft[]>(draftsData as Draft[]);
+  const [engagementConfigs, setEngagementConfigs] = useState<Record<string, EngagementConfig>>(engagementConfigsData as Record<string, EngagementConfig>);
+  const [engagementLogs, setEngagementLogs] = useState<EngagementLog[]>(engagementLogsData as EngagementLog[]);
+  const [notifications, setNotifications] = useState<Notification[]>(notificationsData as Notification[]);
+  const [hydrated, setHydrated] = useState(false);
+
+  // Load from localStorage once on mount (client only)
+  useEffect(() => {
+    setAccounts(loadFromStorage("accounts", accountsData as Account[]));
+    setGroups(loadFromStorage("groups", groupsData as Group[]));
+    setPersonas(loadFromStorage("personas", personasData as Record<string, Persona>));
+    setAutopostConfigs(loadFromStorage("autopostConfigs", autopostData as Record<string, AutopostConfig>));
+    setSources(loadFromStorage("sources", sourcesData as Record<string, Source[]>));
+    setMonitoringMessages(loadFromStorage("monitoringMessages", monitoringData as MonitoringMessage[]));
+    setDrafts(loadFromStorage("drafts", draftsData as Draft[]));
+    setEngagementConfigs(loadFromStorage("engagementConfigs", engagementConfigsData as Record<string, EngagementConfig>));
+    setEngagementLogs(loadFromStorage("engagementLogs", engagementLogsData as EngagementLog[]));
+    setNotifications(loadFromStorage("notifications", notificationsData as Notification[]));
+    setHydrated(true);
+  }, []);
+
+  // Persist to localStorage when state changes
+  useEffect(() => { if (hydrated) saveToStorage("accounts", accounts); }, [accounts, hydrated]);
+  useEffect(() => { if (hydrated) saveToStorage("groups", groups); }, [groups, hydrated]);
+  useEffect(() => { if (hydrated) saveToStorage("personas", personas); }, [personas, hydrated]);
+  useEffect(() => { if (hydrated) saveToStorage("autopostConfigs", autopostConfigs); }, [autopostConfigs, hydrated]);
+  useEffect(() => { if (hydrated) saveToStorage("sources", sources); }, [sources, hydrated]);
+  useEffect(() => { if (hydrated) saveToStorage("monitoringMessages", monitoringMessages); }, [monitoringMessages, hydrated]);
+  useEffect(() => { if (hydrated) saveToStorage("drafts", drafts); }, [drafts, hydrated]);
+  useEffect(() => { if (hydrated) saveToStorage("engagementConfigs", engagementConfigs); }, [engagementConfigs, hydrated]);
+  useEffect(() => { if (hydrated) saveToStorage("engagementLogs", engagementLogs); }, [engagementLogs, hydrated]);
+  useEffect(() => { if (hydrated) saveToStorage("notifications", notifications); }, [notifications, hydrated]);
 
   const addAccount = (account: Account) => setAccounts((p) => [...p, account]);
   const addAccounts = (newAccounts: Account[]) => setAccounts((p) => [...p, ...newAccounts]);
@@ -209,15 +413,98 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const approveDraft = (id: string) =>
+    setDrafts((p) => p.map((d) => d.id === id ? { ...d, status: "approved" } : d));
+
+  const rejectDraft = (id: string) =>
+    setDrafts((p) => p.map((d) => d.id === id ? { ...d, status: "rejected" } : d));
+
+  const regenerateDraft = (id: string) =>
+    setDrafts((p) => p.map((d) => {
+      if (d.id !== id) return d;
+      const variations = [
+        "（重新生成）" + d.content.slice(0, 30) + "... 以另一个角度切入。",
+        "换个角度思考：" + d.content.slice(0, 40) + "。",
+        d.content.split("。")[0] + "。深入一点说，背后的机制其实更有意思。",
+      ];
+      return { ...d, content: variations[Math.floor(Math.random() * variations.length)], generatedAt: new Date().toISOString() };
+    }));
+
+  const editDraft = (id: string, content: string) =>
+    setDrafts((p) => p.map((d) => d.id === id ? { ...d, content } : d));
+
+  const addDraftsFromTopic = (topic: string) => {
+    const picks = accounts.slice(0, 5);
+    const newDrafts: Draft[] = picks.map((a, i) => ({
+      id: `draft_${Date.now()}_${i}`,
+      accountId: a.id,
+      content: `关于"${topic}"：这是 AI 根据该话题和账号 persona 生成的草稿内容占位。实际实现时会调用 Claude API。`,
+      status: "pending",
+      scheduledTime: new Date(Date.now() + (i + 1) * 3600 * 1000).toISOString(),
+      generatedAt: new Date().toISOString(),
+      topic,
+    }));
+    setDrafts((p) => [...newDrafts, ...p]);
+  };
+
+  const getEngagementConfig = (accountId: string): EngagementConfig => {
+    return engagementConfigs[accountId] || DEFAULT_ENGAGEMENT_CONFIG;
+  };
+
+  const updateEngagementConfig = (accountId: string, config: EngagementConfig) =>
+    setEngagementConfigs((p) => ({ ...p, [accountId]: config }));
+
+  const markNotificationRead = (id: string) =>
+    setNotifications((p) => p.map((n) => n.id === id ? { ...n, read: true } : n));
+
+  const markAllNotificationsRead = () =>
+    setNotifications((p) => p.map((n) => ({ ...n, read: true })));
+
+  const addNotification = (n: Omit<Notification, "id" | "at" | "read">) =>
+    setNotifications((p) => [{ ...n, id: `notif_${Date.now()}`, at: new Date().toISOString(), read: false }, ...p]);
+
+  const getHealthScore = (accountId: string): HealthScore => {
+    const h = hashString(accountId);
+    const postingFreq = 10 + (h % 16);  // 10-25
+    const engagement = 10 + ((h * 3) % 16);
+    const consistency = 10 + ((h * 7) % 16);
+    const risk = 10 + ((h * 11) % 16);
+    const score = Math.min(100, postingFreq + engagement + consistency + risk);
+    const riskLevel: "low" | "medium" | "high" = score >= 80 ? "low" : score >= 60 ? "medium" : "high";
+    return {
+      score,
+      breakdown: [
+        { label: "发帖频率稳定性", value: postingFreq, max: 25 },
+        { label: "互动率", value: engagement, max: 25 },
+        { label: "内容一致性", value: consistency, max: 25 },
+        { label: "风险信号", value: risk, max: 25 },
+      ],
+      risk: riskLevel,
+    };
+  };
+
+  const resetDemo = () => {
+    if (typeof window === "undefined") return;
+    const keys = Object.keys(localStorage).filter((k) => k.startsWith(STORAGE_KEY));
+    keys.forEach((k) => localStorage.removeItem(k));
+    window.location.reload();
+  };
+
   return (
     <MockStoreContext.Provider value={{
       accounts, groups, personas, personaTemplates, autopostConfigs,
       sources, tweetPreviews, monitoringMessages,
+      drafts, engagementConfigs, engagementLogs, notifications,
+      trendingTopics: TRENDING_TOPICS, teamMembers: TEAM_MEMBERS, hydrated,
       addAccount, addAccounts, deleteAccount, deleteAccounts,
       updatePersona, applyTemplateToAccounts,
       updateAutopost, applyAutopostToAccounts,
       addSource, addSourcesToAccounts, deleteSource, toggleSourceActive,
       addGroup, moveAccountsToGroup, markMessageRead, randomizePersonas,
+      approveDraft, rejectDraft, regenerateDraft, editDraft, addDraftsFromTopic,
+      getEngagementConfig, updateEngagementConfig,
+      markNotificationRead, markAllNotificationsRead, addNotification,
+      getHealthScore, resetDemo,
     }}>
       {children}
     </MockStoreContext.Provider>

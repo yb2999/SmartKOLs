@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useMockStore, Persona } from "@/lib/mock-store";
 import PersonaForm from "@/components/persona/PersonaForm";
 import DistillationPanel from "@/components/persona/DistillationPanel";
+import HealthCard from "@/components/accounts/HealthCard";
 
 const DEFAULT_PERSONA: Persona = {
   gender: "male",
@@ -41,7 +42,8 @@ export default function PersonaPage() {
             <p className="text-[#00BA7C] text-sm mt-3 text-center">✓ 人格配置已保存</p>
           )}
         </div>
-        <div>
+        <div className="space-y-6">
+          <HealthCard accountId={id} />
           <DistillationPanel
             currentPersona={currentPersona}
             onExtracted={(p) => {

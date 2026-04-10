@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import AddAccountModal from "@/components/accounts/AddAccountModal";
 import CsvImportModal from "@/components/accounts/CsvImportModal";
 import PersonaTemplateModal from "@/components/accounts/PersonaTemplateModal";
+import HealthCard from "@/components/accounts/HealthCard";
 import Link from "next/link";
 import { Plus, Upload, Search, Trash2, Users, Layers, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -175,6 +176,7 @@ export default function AccountsPage() {
                 <th className="py-3 text-left font-medium">账号</th>
                 <th className="py-3 text-left font-medium">分组</th>
                 <th className="py-3 text-left font-medium">状态</th>
+                <th className="py-3 text-left font-medium">健康</th>
                 <th className="py-3 text-left font-medium">粉丝数</th>
                 <th className="py-3 text-left font-medium">推文数</th>
                 <th className="py-3 text-left font-medium">操作</th>
@@ -212,6 +214,9 @@ export default function AccountsPage() {
                       <Badge variant={account.active ? "success" : "secondary"}>
                         {account.active ? "运行中" : "已停用"}
                       </Badge>
+                    </td>
+                    <td className="py-3 pr-4">
+                      <HealthCard accountId={account.id} compact />
                     </td>
                     <td className="py-3 pr-4 text-[#999999]">{formatNumber(account.followersCount)}</td>
                     <td className="py-3 pr-4 text-[#999999]">{formatNumber(account.tweetsCount)}</td>
