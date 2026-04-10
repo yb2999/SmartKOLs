@@ -79,7 +79,7 @@ export default function AccountsPage() {
   return (
     <div className="flex h-screen">
       {/* Group Sidebar */}
-      <aside className="w-52 border-r border-[#E8E8E8] flex-shrink-0 py-6 px-3 space-y-1">
+      <aside data-tour="group-sidebar" className="w-52 border-r border-[#E8E8E8] flex-shrink-0 py-6 px-3 space-y-1">
         <p className="text-xs text-[#999999] uppercase tracking-wider px-3 mb-3">分组</p>
         <button
           onClick={() => setSelectedGroup(null)}
@@ -176,7 +176,7 @@ export default function AccountsPage() {
                 <th className="py-3 text-left font-medium">账号</th>
                 <th className="py-3 text-left font-medium">分组</th>
                 <th className="py-3 text-left font-medium">状态</th>
-                <th className="py-3 text-left font-medium">健康</th>
+                <th data-tour="health-column" className="py-3 text-left font-medium">健康</th>
                 <th className="py-3 text-left font-medium">粉丝数</th>
                 <th className="py-3 text-left font-medium">推文数</th>
                 <th className="py-3 text-left font-medium">操作</th>

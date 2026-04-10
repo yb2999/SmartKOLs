@@ -93,7 +93,7 @@ export default function EngagementPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Left: Config Cards */}
-        <div className="space-y-4">
+        <div data-tour="engagement-cards" className="space-y-4">
           {/* Auto Follow */}
           <div className="bg-white border border-[#E8E8E8] rounded-xl p-5">
             <div className="flex items-center justify-between mb-4">
@@ -293,7 +293,7 @@ export default function EngagementPage() {
         </div>
 
         {/* Right: Engagement Log */}
-        <div className="bg-white border border-[#E8E8E8] rounded-xl p-5 h-fit">
+        <div data-tour="engagement-log" className="bg-white border border-[#E8E8E8] rounded-xl p-5 h-fit">
           <h3 className="text-[#111111] font-semibold text-sm mb-4">互动日志（近 7 天）</h3>
           <div className="space-y-3 max-h-[800px] overflow-y-auto pr-2">
             {accountLogs.length === 0 && (

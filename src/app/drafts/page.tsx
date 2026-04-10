@@ -78,7 +78,7 @@ export default function DraftsPage() {
       </div>
 
       {/* Drafts List */}
-      <div className="space-y-3 max-w-3xl">
+      <div data-tour="drafts-list" className="space-y-3 max-w-3xl">
         {filtered.length === 0 && (
           <div className="text-center py-16 text-[#999999]">
             <Filter className="w-10 h-10 mx-auto mb-3 opacity-30" />

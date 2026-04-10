@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useMockStore } from "@/lib/mock-store";
 import NotificationBell from "./NotificationBell";
 import CommandPalette from "./CommandPalette";
+import TourButton from "@/components/tour/TourButton";
 
 const navItems = [
   { label: "概览", href: "/dashboard", icon: LayoutDashboard },
@@ -55,6 +56,7 @@ export default function Sidebar() {
         {/* Search Trigger */}
         <div className="px-3 pt-4">
           <button
+            data-tour="cmdk-button"
             onClick={() => setPaletteOpen(true)}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-[#999999] bg-[#F7F7F7] hover:bg-[#F0F0F0] transition-colors"
           >
@@ -98,7 +100,8 @@ export default function Sidebar() {
         </nav>
 
         {/* Settings */}
-        <div className="px-3 pb-5 border-t border-[#E8E8E8] pt-3">
+        <div className="px-3 pb-5 border-t border-[#E8E8E8] pt-3 space-y-0.5">
+          <TourButton />
           <Link
             href="/settings"
             className={cn(

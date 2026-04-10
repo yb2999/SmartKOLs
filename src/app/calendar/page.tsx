@@ -112,7 +112,7 @@ export default function CalendarPage() {
       </div>
 
       {/* Week Grid */}
-      <div className="grid grid-cols-7 gap-3 mb-6">
+      <div data-tour="week-grid" className="grid grid-cols-7 gap-3 mb-6">
         {week.map((d, i) => {
           const schedule = getSchedule(d);
           const isToday = d.toDateString() === todayStr;

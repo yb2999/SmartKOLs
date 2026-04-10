@@ -32,7 +32,7 @@ export default function PersonaPage() {
       <p className="text-[#999999] text-sm mb-6">为该 AI KOL 账号定义人格背景与特征。</p>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div>
+        <div data-tour="persona-form">
           <PersonaForm
             accountId={id}
             persona={currentPersona}

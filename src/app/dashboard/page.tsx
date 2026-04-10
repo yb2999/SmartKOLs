@@ -5,6 +5,7 @@ import { useMockStore } from "@/lib/mock-store";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Users, Bell, Zap, TrendingUp, ChevronRight, Flame, FileText, Sparkles } from "lucide-react";
+import TourWelcomeCard from "@/components/tour/TourWelcomeCard";
 
 function formatNumber(n: number) {
   if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
@@ -43,14 +44,16 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-8" data-tour="dashboard-welcome">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-[#111111]">概览</h1>
         <p className="text-[#999999] text-sm mt-1">SmartKOLs 运营数据一览</p>
       </div>
 
+      <TourWelcomeCard />
+
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+      <div data-tour="dashboard-stats" className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
         {stats.map(({ label, value, sub, icon: Icon, color }) => (
           <div key={label} className="bg-white border border-[#E8E8E8] rounded-xl p-5">
             <div className="flex items-center justify-between mb-3">
@@ -64,7 +67,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Trending Topics */}
-      <div className="bg-white border border-[#E8E8E8] rounded-xl p-5 mb-6">
+      <div data-tour="trending-topics" className="bg-white border border-[#E8E8E8] rounded-xl p-5 mb-6">
         <div className="flex items-center gap-2 mb-4">
           <Flame className="w-4 h-4 text-orange-500" />
           <h2 className="text-[#111111] font-semibold text-sm">近 24 小时热门话题</h2>
